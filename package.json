@@ -1,0 +1,40 @@
+{
+  "name": "es6-starter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --exec babel-node src/index.js",
+    "now": "nodemon --exec babel-node src/now.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nguyentrn/es6-starter.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nguyentrn/es6-starter/issues"
+  },
+  "homepage": "https://github.com/nguyentrn/es6-starter#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.0",
+    "@babel/node": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "eslint": "^8.2.0",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.4.1"
+  },
+  "dependencies": {
+    "@binance-chain/bsc-connector": "^1.0.0",
+    "@binance-chain/javascript-sdk": "^4.2.0",
+    "axios": "^0.24.0",
+    "cheerio": "^1.0.0-rc.10",
+    "dotenv": "^10.0.0",
+    "knex": "^0.95.14",
+    "lodash": "^4.17.21",
+    "pg": "^8.7.1",
+    "web3": "^1.6.1"
+  }
+}

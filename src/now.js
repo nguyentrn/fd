@@ -47,7 +47,6 @@ import { flatten, uniqBy } from "lodash";
                 name,
                 price: { value: price },
                 total_like,
-                properties,
                 options,
                 is_available,
                 id,
@@ -56,7 +55,6 @@ import { flatten, uniqBy } from "lodash";
                 name,
                 price: Math.round(price),
                 total_like: total_like.match(/\d/gi).join(""),
-                properties: properties.map(({ name }) => name),
                 options: flatten(
                   options.map(({ option_items }) =>
                     option_items.items.map(

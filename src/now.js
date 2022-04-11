@@ -8,14 +8,14 @@ import db from "./database";
 import { flatten, uniqBy } from "lodash";
 
 (async function main() {
-  const lastRestaurand = await db("delivery")
-    .select("restaurant_id")
-    .orderBy("restaurant_id", "desc")
-    .whereNotNull("restaurant_id")
-    .first();
-  const { restaurant_id } = lastRestaurand;
+  // const lastRestaurand = await db("delivery")
+  //   .select("restaurant_id")
+  //   .orderBy("restaurant_id", "desc")
+  //   .whereNotNull("restaurant_id")
+  //   .first();
+  // const { restaurant_id } = lastRestaurand;
 
-  for (let i = restaurant_id; i < 9999999999; i++) {
+  for (let i = 1000000000; i < 9999999999; i++) {
     const res = await axios(
       "https://gappapi.deliverynow.vn/api/dish/get_delivery_dishes",
       {
@@ -85,6 +85,8 @@ import { flatten, uniqBy } from "lodash";
         await db("delivery").insert(nows).onConflict("id").merge();
       }
       await db("places").insert({ id: i }).onConflict("id").ignore();
+    } else {
+      console.log(i, "no");
     }
   }
 })();

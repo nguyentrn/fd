@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "foody-deli",
-      script: "./src/now.js",
+      script: "./src/index.js",
       interpreter: "babel-node",
       env: {
         // NETWORK: 'testnet',

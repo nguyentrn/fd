@@ -41,36 +41,38 @@ import { flatten, uniqBy } from "lodash";
       const nows = uniqBy(
         flatten(
           res.data.reply.menu_infos.map(({ dish_type_name, dishes }) => {
-            return dishes.map(
-              ({
-                description,
-                name,
-                price: { value: price },
-                total_like,
-                options,
-                is_available,
-                id,
-                // total_order,
-              }) => ({
-                name,
-                price: Math.round(price),
-                total_like: total_like.match(/\d/gi).join(""),
-                options: flatten(
-                  options.map(({ option_items }) =>
-                    option_items.items.map(
-                      ({ name, price }) => `${name} ${price.value}`
+            return dishes
+              .map(
+                ({
+                  description,
+                  name,
+                  price: { value: price },
+                  total_like,
+                  options,
+                  is_available,
+                  id,
+                  // total_order,
+                }) => ({
+                  name,
+                  price: Math.round(price),
+                  total_like: total_like.match(/\d/gi).join(""),
+                  options: flatten(
+                    options.map(({ option_items }) =>
+                      option_items.items.map(
+                        ({ name, price }) => `${name} ${price.value}`
+                      )
                     )
-                  )
-                ),
-                is_available,
-                id,
-                description,
-                dish_type_name,
-                restaurant_id: i,
-                updated_at: new Date(),
-                // total_order,
-              })
-            );
+                  ),
+                  is_available,
+                  id,
+                  description,
+                  dish_type_name,
+                  restaurant_id: i,
+                  updated_at: new Date(),
+                  // total_order,
+                })
+              )
+              .filter(({ total_like }) => total_like > 0);
           })
         ),
         "id"

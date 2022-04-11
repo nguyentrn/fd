@@ -81,7 +81,9 @@ import { flatten, uniqBy } from "lodash";
         // nows.map((n) => n.name),
         i
       );
-      await db("delivery").insert(nows).onConflict("id").merge();
+      if (nows.length) {
+        await db("delivery").insert(nows).onConflict("id").merge();
+      }
       await db("places").insert({ id: i }).onConflict("id").ignore();
     }
   }

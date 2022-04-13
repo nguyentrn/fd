@@ -39,37 +39,37 @@ const getReview = async () => {
   const restaurants = await db("places")
     .select(["id", "total_favourite", "khong_gian"])
     .whereNull("vi_tri")
-    // .where("city", "TP. HCM")
+    .whereIn("city", ["TP. HCM", "Vũng Tàu", "Lâm Đồng", "Bình Thuận"])
     // .where("id", ">", 400000)
     .where("total_favourite", ">=", 0)
-    // .orderByRaw("total_favourite DESC");
-    // .whereIn("district", [
-    //   // "Quận 1",
-    //   // "Quận 2",
-    //   "Quận 3",
-    //   "Quận 4",
-    //   "Quận 5",
-    //   // 'Quận 6',
-    //   "Quận 7",
-    //   "Quận 8",
-    //   // 'Quận 9',
-    //   "Quận 10",
-    //   // "Quận 11",
-    //   // 'Quận 12',
-    //   "Quận Phú Nhuận",
-    //   "Quận Bình Thạnh",
-    //   "Quận Tân Bình",
-    //   // "Quận Gò Vấp",
-    //   // 'Quận Tân Phú',
-    //   // 'Quận Bình Tân',
-    //   // "Tp. Thủ Đức",
-    //   "Huyện Bình Chánh",
-    //   // 'Huyện Hóc Môn',
-    //   // 'Huyện Nhà Bè',
-    //   // 'Huyện Cần Giờ',
-    //   // 'Huyện Củ Chi',
-    // ])
-    .orderByRaw("id DESC");
+    .orderByRaw("total_favourite DESC");
+  // .whereIn("district", [
+  //   // "Quận 1",
+  //   // "Quận 2",
+  //   "Quận 3",
+  //   "Quận 4",
+  //   "Quận 5",
+  //   // 'Quận 6',
+  //   "Quận 7",
+  //   "Quận 8",
+  //   // 'Quận 9',
+  //   "Quận 10",
+  //   // "Quận 11",
+  //   // 'Quận 12',
+  //   "Quận Phú Nhuận",
+  //   "Quận Bình Thạnh",
+  //   "Quận Tân Bình",
+  //   // "Quận Gò Vấp",
+  //   // 'Quận Tân Phú',
+  //   // 'Quận Bình Tân',
+  //   // "Tp. Thủ Đức",
+  //   "Huyện Bình Chánh",
+  //   // 'Huyện Hóc Môn',
+  //   // 'Huyện Nhà Bè',
+  //   // 'Huyện Cần Giờ',
+  //   // 'Huyện Củ Chi',
+  // ]);
+  // .orderByRaw("id DESC");
   console.log(restaurants);
   for (let i = 0; i <= restaurants.length; i++) {
     const id = restaurants[i].id;

@@ -5,8 +5,8 @@ const updateArea = async (area, searchUrl, count, city) => {
     .insert({
       id: area,
       url: searchUrl.split("?")[0].split("/")[2],
-      city: count ? city : null,
-      count,
+      city: Object.values(count)[0] ? city : null,
+      ...count,
       updated_at: new Date(),
     })
     .onConflict("id")

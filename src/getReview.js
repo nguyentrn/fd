@@ -28,14 +28,51 @@ const request = async (resId) => {
 };
 
 const getReview = async () => {
-  const lastRestaurant = await db("places")
-    .select("id")
-    .orderBy("id", "desc")
-    .whereNotNull("vi_tri")
-    .first();
-  const { id: resId } = lastRestaurant;
+  // const lastRestaurant = await db("places")
+  //   .select("id")
+  //   .orderBy("id", "desc")
+  //   .whereNotNull("vi_tri")
+  //   .first();
+  // const { id: resId } = lastRestaurant;
+  // for (let id = resId + 1; id <= 9999999999; id++) {
 
-  for (let id = resId + 1; id <= 9999999999; id++) {
+  const restaurants = await db("places")
+    .select(["id", "total_favourite", "khong_gian"])
+    .whereNull("vi_tri")
+    // .where("city", "TP. HCM")
+    // .where("id", ">", 400000)
+    .where("total_favourite", ">=", 0)
+    // .orderByRaw("total_favourite DESC");
+    // .whereIn("district", [
+    //   // "Quận 1",
+    //   // "Quận 2",
+    //   "Quận 3",
+    //   "Quận 4",
+    //   "Quận 5",
+    //   // 'Quận 6',
+    //   "Quận 7",
+    //   "Quận 8",
+    //   // 'Quận 9',
+    //   "Quận 10",
+    //   // "Quận 11",
+    //   // 'Quận 12',
+    //   "Quận Phú Nhuận",
+    //   "Quận Bình Thạnh",
+    //   "Quận Tân Bình",
+    //   // "Quận Gò Vấp",
+    //   // 'Quận Tân Phú',
+    //   // 'Quận Bình Tân',
+    //   // "Tp. Thủ Đức",
+    //   "Huyện Bình Chánh",
+    //   // 'Huyện Hóc Môn',
+    //   // 'Huyện Nhà Bè',
+    //   // 'Huyện Cần Giờ',
+    //   // 'Huyện Củ Chi',
+    // ])
+    .orderByRaw("id DESC");
+  console.log(restaurants);
+  for (let i = 0; i <= restaurants.length; i++) {
+    const id = restaurants[i].id;
     const review = await request(id);
     if (review.Restaurant) {
       const place = {
@@ -45,17 +82,17 @@ const getReview = async () => {
         avg_rating: review.Restaurant.AvgRating,
         total_review: review.AvgReview.Total,
         vi_tri: review.Rating[0].Point,
-        gia_ca: review.Rating[0].Point,
-        chat_luong: review.Rating[0].Point,
-        phuc_vu: review.Rating[0].Point,
-        khong_gian: review.Rating[0].Point,
+        gia_ca: review.Rating[1].Point,
+        chat_luong: review.Rating[2].Point,
+        phuc_vu: review.Rating[3].Point,
+        khong_gian: review.Rating[4].Point,
         updated_at: new Date(),
       };
       await db("places").insert(place).onConflict("id").merge();
     }
 
     console.log(id);
-    await sleep(300);
+    await sleep(500);
   }
 };
 

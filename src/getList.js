@@ -1,83 +1,141 @@
-import formatItem from "./formatItem";
-import updateArea from "./updateArea";
-import updatePlaces from "./updatePlaces";
-import db from "./database";
+import axios from "axios";
 
-const areas = [1];
-const provinceId = 217;
-const categories = [
-  { id: 12, name: "Sang trọng" },
-  { id: 39, name: "Buffet" },
-  { id: 1, name: "Nhà hàng" },
-  { id: 11, name: "Ăn vặt/vỉa hè" },
-  { id: 56, name: "Ăn chay" },
-  { id: 2, name: "Café/Dessert" },
-  { id: 3, name: "Quán ăn" },
-  { id: 4, name: "Bar/Pub" },
-  { id: 54, name: "Quán nhậu" },
-  { id: 43, name: "Beer club" },
-  { id: 6, name: "Tiệm bánh" },
-  { id: 44, name: "Tiệc tận nơi" },
-  { id: 27, name: "Shop Online" },
-  { id: 28, name: "Giao cơm văn phòng" },
-  { id: 79, name: "Khu Ẩm Thực" },
-];
+import db from "./database";
+import formatItem from "./formatItem";
+import updatePlaces from "./updatePlaces";
+import categories from "./constant/categories";
+import provinces from "./constant/provinces";
+import { uniqBy } from "lodash";
+import cuisines from "./constant/cuisines";
 
 const request = async (params) => {
-  const res = await axios.get(`https://www.foody.vn/ho-chi-minh/dia-diem`, {
-    params: {
-      ds: "Restaurant",
-      ar: params.area,
-      page: params.page || 1,
-      provinceId: params.provinceId,
-      categoryId: params.categoryId || "",
-      vt: "row",
-      st: 1,
-      append: true,
-    },
-    headers: {
-      Cookie:
-        "bc-jcb=1; flg=vn; floc=217; gcat=food; FOODY.AUTH.UDID=dc302945-fdb1-49c9-bb09-b1eaaf5916b9; FOODY.AUTH=8F6D45286EBE9317754A89FC61775C35EABC01D020B962058E4D37B0A05DC06B342D600749BE173BDA814BDB02E3034F050B1D1A88225BE981E441F7A7B47A3D96F8E4D9563CFA12CB01A72911E2983C7A42BFA909F5B28CD306F2FB5F9EC98C43088506B9319F72787BB49266374453C13987FB2229F256BE1C141125B8A11D2AA2C097D451D2FEB95B474321569AF53730C0CD1AA57C0863E188D2BBB291D5E52206EECDA499692D7332898E25ED676FD06C5D206C3DCD6279C09EF28D5CBDF6206E206CB4027D780F0B19D79F32534CCACED39AA60101B1378AA81BAD45B54C144BBAF973A83A51E4CC283F522E95; fbm_395614663835338=base_domain=.foody.vn; __ondemand_sessionid=2ydvnb0ahebp2bxwtsfqz3mj; fd.verify.password.27019510=23/03/2022; fd.keys=#sao#Xa%cc%80m; fd.res.view.217=291087,239871,161520,126893,595,168402,251108,169646,999827,44716,634552; fbsr_395614663835338=y3pd7m2jkuIwMpCNsttdSZwKyJ_L-N5pn1ChdBOiT64.eyJ1c2VyX2lkIjoiMTQ4NzUwMzE4ODIyOTE5OSIsImNvZGUiOiJBUUNKa29EbDR5M2Q3eUZKTXhXNmcxUXpWMldfN2hDNkxPZ0ZPMExHdXc4VFU2VldBSjBLT09kOUh0VG5FcG1JWEFDMlBRVm0yTXNtaVl5XzdDd1A2X0g4cG5EcjlFX0VEOXdlNGJ6VEtpM2xJaktZSFB0TF9YUFRINDMwaHM0LTdOY3ZndFlJcGxjb2pSU29qYlhCVDdveXlwSV9ScnBGZU5WQUlGV05Idk1QTjhRU0N0eTdYbnE5ajJkZU8teXh4RDE2QVpzRWE0S1JFTTBjOThIdXBURDdyUWFwb0JjQWFNVFRkeGRuZGR5eGF0UmVNSXQtSzdFYU5TZFhTVTZlYkM4N1NmcExVLXpOMVJOX0tsb0J1dXNDUnZpY3dmU3B5Wl9wdEQ0WldLckhOMkZoZzBLWElSOGFiaS1kUEpQbWk3eDhRaFBwQzJ3QmpkZjF5VVprNTRjTSIsIm9hdXRoX3Rva2VuIjoiRUFBRm56emVCZnNvQkFLeE1YUERuQXZKQnI4MEg5aDhJeFVZeFJ6d1M1QlRuMFBpV2Y5dk96NG1lNkhxVjZnRG11OGRLMFc3RVFMbFl3YXhWUjJaQjhyeFpBSVdqdDVMbkVRUUdrNUllWkNYZ0Z3NTBpbkJPbDN6Z29Ga1pCcmZpOWhGUkpiWkJpTXZzOHhQVlpBc0ZWUlk4Mk1GZVl1YXZXSmNobENjeEtaQkJxMEdNSzJPRVpDMHhBRk9wMmRoR1FqTnRvR1RoSW9wZW5CbFJrc1pBRWs3bFQiLCJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTY0ODA0NzY5NH0; fbsr_395614663835338=0OPOWGmXOYoE-ZSH9EWlVuxgO5gzlqKX73RuP0li-1A.eyJ1c2VyX2lkIjoiMTQ4NzUwMzE4ODIyOTE5OSIsImNvZGUiOiJBUURpUWl1NUdlU2RLMy1DR0dmRVJsU1gweHFoTnpXc2E3c1BRLUhHQ2pOUFVyMDlRRU9Ub3Nsb2JpalczcGxTbzR6LVVWLTVMV3hrTXNmNmNpU2EtSWJHT204amdZaFVKWDV6VlZjTmxoa1FXcVdiTXNZSXQtLTNQbi1rN0xpeDc0MnFHODJpN0hid1RONEVHV3VHTkFNR3M0a1k5S1dzSFQteUZSWkE1Y25GN25wZGN3Tk90ZUlaSlBSNmFQMElxQWUwOVZ3QjlBMk5QMzcxX2o3ZlltS3E3WTJNanV0dmxlUm1sQWcwaTVXbEsyeXhMdjgwS01CWHpuN28wNzlnRk5nWlFvTk5HMUtMQ2syRWpDSl9qRlYtSFlrdEVoYkFlb3h6NzJRdzFNVmlzNGV0VzZmdDRrRWo0cnhsMlNhR2t1VlVJVGVXU19oRHl0a1VEaG9GWUlJcyIsIm9hdXRoX3Rva2VuIjoiRUFBRm56emVCZnNvQkFQV0FJaHdoSFJ0SUNpNERTWG9YeWJlOXRRaU5xRkJ5ejYyUHhHRGI0SkJHcU93bTNiYzVEQnE5ZnZEN01aQ3U0bTJURVI5UEVNZmRVWkJnaWhOU0hiRFY2eENkamo0RlhsZVpBZlFld3NNbkw4aXdON0x6YUgzdmdzbWNzNXd6NXZPTllHajVoVmtaQktzaEE1ckJoMGxGWW5QR2pRaVlPMEVSc0FuTk03bTlDYjFubFhnNVlFUUFXSzdLa1lpZHRMYWk0QkdaQyIsImFsZ29yaXRobSI6IkhNQUMtU0hBMjU2IiwiaXNzdWVkX2F0IjoxNjQ4MDQ5MTYyfQ",
-      "X-Foody-User-Token":
-        "SkdgAFgnMGjM70IK66XVdGHGqgL0hmXtdJGoOKR7nD18B65YlakyHexgWJJx",
-      "X-Requested-With": "XMLHttpRequest",
-    },
-  });
-  return res.data;
+  console.log(params.page);
+  try {
+    const res = await axios.get(
+      `https://www.foody.vn/${params.provinceUrl}/dia-diem`,
+      {
+        params: {
+          ds: "Restaurant",
+          ar: params.area,
+          page: params.page || 1,
+          provinceId: params.provinceId,
+          categoryId: params.categoryId || "",
+          cs: params.cuisine || null,
+          vt: "row",
+          st: 4,
+          append: true,
+        },
+        headers: {
+          Cookie:
+            "flg=vn; FOODY.AUTH.UDID=dc302945-fdb1-49c9-bb09-b1eaaf5916b9; fbm_395614663835338=base_domain=.foody.vn; fd.res.view.240=1012152; fd.res.view.254=1048556; fd.res.view.218=264305; __ondemand_sessionid=14lykrfy1cjnzzdxc4yzjkcg; fd.keys=#a#breadtalk#th%c3%b4ng+farm#x%c3%a0m; ilg=0; FOODY.AUTH=C387431A036A72F7D23511615EB87103A897269D1E3C7BA4114F168312C2D3690C287A1EED82FFB9AE488E9932327B5FFF82D348A87648D86E37270DB8586E5241D8EF95E315177BA1A17DD16F399E7AE314C9554364B60AF6A7EAB9BD762425032427C63C9090084869BCA342E82168706A2EB3D2AD13344565F7AC4E1A9DB6E4BEE15CF893B84093BCE85B0E1F535BA8C3BD34C3B034EE731BD717E5E419601E60038AA99A821AC394D0A77497AEF399D5CA03859042E0C36A7F391FBD6CEC91B5C8ABD4625CF3F906463F4C20F7A30666A57A7C27A06DE95EFE1241804712E5EBF80E88A06B06ADA94CADE6AEA466; _pos.coords=10.7321169-106.6867526; fd.res.view.285=249921; fd.res.view.217=52517,643,92383,701714,92982,1997,785884,990502,15052,42888,1023413,112158,103056,39740,72708,211,1121137,916747,71782,147403; floc=217; gcat=food",
+          "X-Foody-User-Token":
+            " AlN1oMlsKAeTJF1qBjxigMiS2056R1VBut1rY9FXX2OJ2tirR8gVxwAZ2Cij",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.log(err.reponse);
+    await fetchItems(params);
+  }
+};
+
+const fetchItems = async (area, provinceId, provinceUrl, categoryId) => {
+  const items = [];
+  let isContinue = true;
+  let page = 1;
+  while (isContinue) {
+    const res = await request({
+      area,
+      provinceId,
+      provinceUrl,
+      categoryId,
+      page,
+    });
+    res.searchItems.map((d) => items.push(formatItem(d, area)));
+    if (res.searchItems.length < 12) {
+      isContinue = false;
+    }
+    if (page === 50) {
+      for (let c = 0; c < cuisines.length; c++) {
+        const cuisine = cuisines[c].id;
+        console.log("cuisine", cuisines[c].name);
+        let isContinueCuisine = true;
+        let pageCusine = 1;
+        while (isContinueCuisine) {
+          const res = await request({
+            area,
+            provinceId,
+            provinceUrl,
+            categoryId,
+            page: pageCusine,
+            cuisine,
+          });
+          res.searchItems.map((d) => items.push(formatItem(d, area)));
+          if (res.searchItems.length < 12) {
+            isContinueCuisine = false;
+          }
+          pageCusine++;
+          if (pageCusine >= 50) {
+            break;
+          }
+        }
+        isContinue = false;
+      }
+    }
+    page++;
+  }
+  return items;
 };
 
 const getList = async () => {
   const areas = await db("areas")
-    .select("id")
-    .where("count", ">", 600)
-    .orderBy("count");
+    .select(["id", "city", "food", "url"])
+    // .where("food", ">", 0)
+    .where("food", ">", 600)
+    // .where("updated_at", ">", new Date("2022-04-13 00:00:00.000"))
+    // .whereNot("city", "217")
+    .whereNotNull("url")
+    .orderBy("updated_at");
+  // .limit(1);
   console.log(areas);
   for (let a = 0; a < areas.length; a++) {
-    const area = areas[a].id;
-    const res = await request({ area, provinceId });
-
-    const items = res.searchItems.map((d) => formatItem(d, area));
-    await updatePlaces(items);
-    await updateArea(area, res.searchUrl, res.totalResult, provinceId);
-    if (res.totalResult <= 600) {
-      for (let page = 2; page < res.totalResult / 12 + 1; page++) {
-        const res = await request({ area, provinceId, page });
-        const items = res.searchItems.map((d) => formatItem(d, area));
-        await updatePlaces(items);
-        console.log(page * 12, res.totalResult, area);
-      }
+    const items = [];
+    const area = areas[a];
+    const cityUrl = provinces.find(({ id }) => id === area.city * 1).url;
+    if (area.food <= 600) {
+      const newItems = await fetchItems(area.id, area.city, cityUrl);
+      newItems.forEach((newItem) => {
+        items.push(newItem);
+      });
     } else {
       for (let c = 0; c < categories.length; c++) {
         const categoryId = categories[c].id;
-        const res = await request({ area, provinceId, categoryId });
-        for (let page = 2; page < res.totalResult / 12 + 1; page++) {
-          const res = await request({ area, provinceId, page, categoryId });
-          const items = res.searchItems.map((d) => formatItem(d, area));
-          await updatePlaces(items);
-          console.log(page * 12, res.totalResult, area, categoryId);
-        }
+        console.log("categority", categories[c].name);
+        const newItems = await fetchItems(
+          area.id,
+          area.city,
+          cityUrl,
+          categoryId
+        );
+        newItems.forEach((newItem) => {
+          items.push(newItem);
+        });
       }
     }
+    const uniqItems = uniqBy(items, "id");
+    console.log(
+      "Area: ",
+      cityUrl,
+      "/",
+      area.url,
+      "Total: ",
+      uniqItems.length,
+      items.length
+    );
+    await updatePlaces(uniqItems);
+    await db("areas").where("id", area.id).update({ updated_at: new Date() });
   }
 };
 
